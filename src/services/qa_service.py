@@ -8,6 +8,7 @@ async def getRandomQuestions():
     try:
         collection_name = "question_bank"
         pipeline = [
+            {"$match": {"code": {"$eq": None}}},
             {"$sample":  {"size": 5}}
         ]
         projection = {
@@ -42,11 +43,11 @@ async def getRandomQuestions():
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-async def getAnswers(questionIDs: List[AnswerRequestModel]):
+async def getAnswersOfQuestions(questionIDs: List[AnswerRequestModel]):
     try:
         collection_name = "question_bank"
 
-        ids = [dic["questionId"] for dic in questionIDs]
+        ids = [dic.questionId for dic in questionIDs]
         query = {
                 "id": {"$in": ids}
         }
@@ -59,15 +60,22 @@ async def getAnswers(questionIDs: List[AnswerRequestModel]):
         answers = wq_mongo_db_client.find(collection_name, query, projection)
         validated_answers = []
 
-        for answer in answers:
+        # Create a dictionary to map questionId to its document
+        answers_dict = {str(answer["id"]): answer for answer in answers}
+
+        # Validate and format the documents based on the original order of questionIds
+        validated_answers = []
+        for questionId in ids:
             try:
-                # Try to parse the question into a AnswerResponseModel
-                validated_answer = AnswerResponseModel(**answer)
-                # model_dump is used as dict() is deprecated
-                validated_answers.append(validated_answer.model_dump())
+                # Try to parse the answer into an AnswerResponseModel
+                answer = answers_dict.get(str(questionId))
+                if answer:
+                    validated_answer = AnswerResponseModel(**answer)
+                    validated_answers.append(validated_answer.model_dump())
             except ValidationError as e:
                 # If validation fails, raise HTTPException with a 422 status code
-                raise HTTPException(status_code=422, detail=f"Invalid question format: {e}")
+                raise HTTPException(status_code=422, detail=f"Invalid answer format: {e}")
+            
             
         return validated_answers
 

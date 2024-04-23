@@ -26,6 +26,8 @@ class AnswerRequestModel(BaseModel):
 
 class AnswerResponseModel(BaseModel):
     id: str  # Unique identifier for the question
+    question: str
+    code: Optional[str] = None
     correctOption: OptionModel  # The correct option
     explanation: str  # Explanation for the correct answer
     tags: List[str]  # List of tags/categories for the question

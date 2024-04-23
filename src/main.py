@@ -1,10 +1,22 @@
+import sys
+import os
+
+# Get the absolute path of the parent directory of the current file
+current_file_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(current_file_dir, '..'))
+
+# Add the parent directory to the Python module search path
+sys.path.append(parent_dir)
+
+
+
 from typing import List
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.services.bulk_data_insert_service import bulk_insert_data
 from src.common_config import ALLOWED_CORS_ORIGIN, PORT
-from src.services.qa_service import getRandomQuestions
+from src.services.qa_service import getRandomQuestions, getAnswersOfQuestions
 from src.db.mongo_db import wq_mongo_db_client
 from src.models.qa_model import AnswerRequestModel, AnswerResponseModel, QuestionResponseModel
 
@@ -40,11 +52,11 @@ async def test():
 
 @app.get("/api/v1/getQuestions", response_model=List[QuestionResponseModel])
 async def getQuestions():
-    return getRandomQuestions()
+    return await getRandomQuestions()
 
-@app.post("/api/v1/getAnswer", response_model=List[AnswerResponseModel])
+@app.post("/api/v1/getAnswers", response_model=List[AnswerResponseModel])
 async def getAnswers(request: List[AnswerRequestModel]):
-    return getAnswers(request)
+    return await getAnswersOfQuestions(request)
 
 
 if __name__ == "__main__":
