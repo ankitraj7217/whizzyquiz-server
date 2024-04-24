@@ -43,9 +43,9 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-@app.get("/")
+@app.get("/api/v1/start")
 async def test():
-    bulk_insert_data()
+    # bulk_insert_data()
     return {"status": "OK"}
 
 #Ideally, should create a router folder with multiple distinct routers using APIRouter
