@@ -59,5 +59,6 @@ async def getAnswers(request: List[AnswerRequestModel]):
     return await getAnswersOfQuestions(request)
 
 
+# Start server based on port provided in env.
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=PORT)
